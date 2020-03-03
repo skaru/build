@@ -1,0 +1,29 @@
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine.dtsi b/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine.dtsi
+index 9d20e13f0..04b187025 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine.dtsi
++++ b/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine.dtsi
+@@ -131,6 +131,24 @@
+ 	regulator-name = "vdd-sys";
+ };
+ 
++&reg_dldo1 {
++	regulator-min-mircovolt = <3300000>;
++	regulator-max-mircovolt = <3300000>;
++	regulator-name = "vcc-hdmi-dsi";
++};
++
++&reg_dldo2 {
++	regulator-min-microvolt = <3300000>;
++	regulator-max-microvolt = <3300000>;
++	regulator-name = "vcc-wifi";
++};
++
++&reg_dldo4 {
++	regulator-min-microvolt = <1800000>;
++	regulator-max-microvolt = <3300000>;
++	regulator-name = "vcc-wifi-io";
++}; 
++
+ &reg_eldo1 {
+ 	regulator-always-on;
+ 	regulator-min-microvolt = <1800000>;

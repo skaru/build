@@ -1,0 +1,31 @@
+diff -uNr orange-pi-5.4-bk/arch/arm64/boot/dts/allwinner/overlay/Makefile orange-pi-5.4/arch/arm64/boot/dts/allwinner/overlay/Makefile
+--- orange-pi-5.4-bk/arch/arm64/boot/dts/allwinner/overlay/Makefile	2020-02-29 00:01:55.676403200 +0100
++++ orange-pi-5.4/arch/arm64/boot/dts/allwinner/overlay/Makefile	2020-02-29 00:02:49.920703632 +0100
+@@ -5,8 +5,6 @@
+ 	sun50i-a64-i2c1.dtbo \
+ 	sun50i-a64-pps-gpio.dtbo \
+ 	sun50i-a64-spi-add-cs1.dtbo \
+-	sun50i-a64-spi-jedec-nor.dtbo \
+-	sun50i-a64-spi-spidev.dtbo \
+ 	sun50i-a64-uart1.dtbo \
+ 	sun50i-a64-uart2.dtbo \
+ 	sun50i-a64-uart3.dtbo \
+@@ -24,8 +22,6 @@
+ 	sun50i-h5-pwm.dtbo \
+ 	sun50i-h5-spdif-out.dtbo \
+ 	sun50i-h5-spi-add-cs1.dtbo \
+-	sun50i-h5-spi-jedec-nor.dtbo \
+-	sun50i-h5-spi-spidev.dtbo \
+ 	sun50i-h5-uart1.dtbo \
+ 	sun50i-h5-uart2.dtbo \
+ 	sun50i-h5-uart3.dtbo \
+@@ -39,9 +35,6 @@
+ 	sun50i-h6-i2c2.dtbo \
+ 	sun50i-h6-ruart.dtbo \
+ 	sun50i-h6-spi-add-cs1.dtbo \
+-	sun50i-h6-spi-jedec-nor.dtbo \
+-	sun50i-h6-spi-spidev.dtbo \
+-	sun50i-h6-spi-spidev1.dtbo \
+ 	sun50i-h6-uart1.dtbo \
+ 	sun50i-h6-uart2.dtbo \
+ 	sun50i-h6-uart3.dtbo \

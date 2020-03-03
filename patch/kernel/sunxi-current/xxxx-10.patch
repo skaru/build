@@ -1,0 +1,134 @@
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts b/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts
+index b930a2476..8ff4bbf2f 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts
++++ b/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts
+@@ -133,8 +133,6 @@
+ 
+ &i2c0 {
+ 	/*compatible = "allwinner,sun50i-a64";*/
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&i2c0_pins>;
+ 	status = "okay";
+ 	
+ /*	gt911@5d {
+diff --git a/drivers/i2c/busses/i2c-mv64xxx.c b/drivers/i2c/busses/i2c-mv64xxx.c
+index a5a95ea5b..52fa6276c 100644
+--- a/drivers/i2c/busses/i2c-mv64xxx.c
++++ b/drivers/i2c/busses/i2c-mv64xxx.c
+@@ -80,6 +80,15 @@
+ /* Bridge Status values */
+ #define	MV64XXX_I2C_BRIDGE_STATUS_ERROR			BIT(0)
+ 
++/* sun4i TWI LCR register */
++#define	SUN4I_I2C_LCR_REG				0x20
++#define SUN4I_I2C_LCR_SCL_STATE				BIT(5)
++#define SUN4I_I2C_LCR_SDA_STATE				BIT(4)
++#define SUN4I_I2C_LCR_SCL_CTL				BIT(3)
++#define SUN4I_I2C_LCR_SCL_CTL_EN			BIT(2)
++#define SUN4I_I2C_LCR_SDA_CTL				BIT(1)
++#define SUN4I_I2C_LCR_SDA_CTL_EN			BIT(0)
++
+ /* Driver states */
+ enum {
+ 	MV64XXX_I2C_STATE_INVALID,
+@@ -169,6 +178,84 @@ static struct mv64xxx_i2c_regs mv64xxx_i2c_regs_sun4i = {
+ 	.soft_reset	= 0x18,
+ };
+ 
++static void sun4i_i2c_set_scl(struct i2c_adapter *adap, int val)
++{
++	struct mv64xxx_i2c_data *drv_data = i2c_get_adapdata(adap);
++        if (val)
++		writel(SUN4I_I2C_LCR_SCL_CTL | SUN4I_I2C_LCR_SCL_CTL_EN,
++		       drv_data->reg_base + SUN4I_I2C_LCR_REG);
++        else
++		writel(SUN4I_I2C_LCR_SCL_CTL_EN, /* write a 0 out of SCL */
++		       drv_data->reg_base + SUN4I_I2C_LCR_REG);
++}
++
++static int sun4i_i2c_get_scl(struct i2c_adapter *adap)
++{
++	struct mv64xxx_i2c_data *drv_data = i2c_get_adapdata(adap);
++        int val;
++
++        /* read the state of SCL */
++	val = readl(drv_data->reg_base + SUN4I_I2C_LCR_REG);
++        return val & SUN4I_I2C_LCR_SCL_STATE;
++}
++
++static int sun4i_i2c_get_sda(struct i2c_adapter *adap)
++{
++	struct mv64xxx_i2c_data *drv_data = i2c_get_adapdata(adap);
++        int val;
++
++        /* read the state of SDA */
++	val = readl(drv_data->reg_base + SUN4I_I2C_LCR_REG);
++        return val & SUN4I_I2C_LCR_SDA_STATE;
++}
++
++static void sun4i_i2c_scl_prepare_recovery(struct i2c_adapter *adap)
++{
++	struct mv64xxx_i2c_data *drv_data = i2c_get_adapdata(adap);
++        int val;
++
++        /* Disable interrupts */
++        //sun4i_i2c_write_reg(dev, DAVINCI_I2C_IMR_REG, 0);
++
++        /* put I2C into reset */
++        //sun4i_i2c_reset_ctrl(dev, 0);
++
++        /* DEBUG read the state of SCL & SDA */
++	val = readl(drv_data->reg_base + SUN4I_I2C_LCR_REG);
++	dev_err(&drv_data->adapter.dev, "mv64xxx: I2C bus recovering, LCR val: 0x%0x, ", val);
++
++        /* SCL output, SDA input */
++        //sun4i_i2c_write_reg(dev, DAVINCI_I2C_DIR_REG, DAVINCI_I2C_DIR_PDIR0);
++
++        /* change to GPIO mode */
++        //sun4i_i2c_write_reg(dev, DAVINCI_I2C_FUNC_REG,
++        //                      DAVINCI_I2C_FUNC_PFUNC0);
++}
++
++static void sun4i_i2c_scl_unprepare_recovery(struct i2c_adapter *adap)
++{
++	struct mv64xxx_i2c_data *drv_data = i2c_get_adapdata(adap);
++        int val;
++
++        /* change back to I2C mode */
++	writel(0, drv_data->reg_base + SUN4I_I2C_LCR_REG);
++
++        /* DEBUG read the state of SCL & SDA */
++	val = readl(drv_data->reg_base + SUN4I_I2C_LCR_REG);
++	dev_err(&drv_data->adapter.dev, "mv64xxx: I2C bus recovered, LCR val: 0x%0x, ", val);
++
++        //sun4i_i2c_unprepare_recovery(adap);
++}
++
++static struct i2c_bus_recovery_info sun4i_i2c_scl_recovery_info = {
++        .recover_bus = i2c_generic_scl_recovery,
++        .set_scl = sun4i_i2c_set_scl,
++        .get_scl = sun4i_i2c_get_scl,
++        .get_sda = sun4i_i2c_get_sda,
++        .prepare_recovery = sun4i_i2c_scl_prepare_recovery,
++        .unprepare_recovery = sun4i_i2c_scl_unprepare_recovery,
++};
++
+ static void
+ mv64xxx_i2c_prepare_for_io(struct mv64xxx_i2c_data *drv_data,
+ 	struct i2c_msg *msg)
+@@ -562,6 +649,7 @@ mv64xxx_i2c_wait_for_completion(struct mv64xxx_i2c_data *drv_data)
+ 				"mv64xxx: I2C bus locked, block: %d, "
+ 				"time_left: %d\n", drv_data->block,
+ 				(int)time_left);
++			i2c_recover_bus(&drv_data->adapter);
+ 			mv64xxx_i2c_hw_init(drv_data);
+ 		}
+ 	} else
+@@ -937,6 +1025,7 @@ mv64xxx_i2c_probe(struct platform_device *pd)
+ 	drv_data->adapter.class = I2C_CLASS_DEPRECATED;
+ 	drv_data->adapter.nr = pd->id;
+ 	drv_data->adapter.dev.of_node = pd->dev.of_node;
++	i2c_recover_bus(&drv_data->adapter);
+ 	platform_set_drvdata(pd, drv_data);
+ 	i2c_set_adapdata(&drv_data->adapter, drv_data);
+ 
