@@ -1,0 +1,11 @@
+diff -uNr orange-pi-5.4-bk/arch/arm64/boot/dts/allwinner/sun50i-a64.dtsi orange-pi-5.4/arch/arm64/boot/dts/allwinner/sun50i-a64.dtsi
+--- orange-pi-5.4-bk/arch/arm64/boot/dts/allwinner/sun50i-a64.dtsi	2020-03-03 08:49:39.458167632 +0100
++++ orange-pi-5.4/arch/arm64/boot/dts/allwinner/sun50i-a64.dtsi	2020-03-03 09:08:10.239015420 +0100
+@@ -1120,6 +1120,7 @@
+ 			reg = <0x01ca0000 0x1000>;
+ 			interrupts = <GIC_SPI 89 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&ccu CLK_BUS_MIPI_DSI>;
++			clock-names = "bus";
+ 			resets = <&ccu RST_BUS_MIPI_DSI>;
+ 			phys = <&dphy>;
+ 			phy-names = "dphy";
